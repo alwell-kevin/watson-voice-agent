@@ -15,7 +15,7 @@ Make sure you have a deployed an instance of an application, or you can run it l
 Note the number that you configured the SIP URI for. You need this phone number to set up your voice agent, including the country and area codes. See Creating and connecting your voice agent.
 > 9. Note* for call control, you will want to leverage a Watson SOE. Pointing the SOE at your client application web hook will allow you to [modify the call on the fly](https://developer.nexmo.com/voice/voice-api/building-blocks/transfer-a-call).
 
-2. Create the following Bluemix services to launch the assistant *(Voice Agent will create them for you)*: 
+Create the following Bluemix services to launch the assistant *(Voice Agent will create them for you)*: 
 * [Watson Speech To Text](https://console.bluemix.net/catalog/services/speech-to-text), 
 * [Watson Text To Speech](https://console.bluemix.net/catalog/services/text-to-speech), 
 * [Watson Assistant](https://console.bluemix.net/catalog/services/watson-assistant), 
