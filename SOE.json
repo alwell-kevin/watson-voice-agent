@@ -1,0 +1,167 @@
+[{
+    "id": "1ba30e6a.f7edb2",
+    "type": "tab",
+    "label": "Nexmo Flow",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "654166bd.824218",
+    "type": "function",
+    "z": "1ba30e6a.f7edb2",
+    "name": "PreAssistantProc",
+    "func": "var convRequest = null;\nvar nexmoMsg = null;\n\nif (msg.payload.context && msg.payload.context.nexmoCommand){\n    //  This handles sending the telephony command to Nexmo\n    //  Create a msg object that will be sent to our http endpoint\n\n    nexmoMsg = msg;\n    nexmoMsg.params = {};\n    nexmoMsg.params.context = msg.payload.context;\n} else{\n    //  This handles the setup of the message to go into Watson Assistant\n    convRequest = msg;\n    convRequest.params = {};\n    convRequest.params.context = msg.payload.context;\n    \n    if (typeof msg.payload.context !== undefined){\n        convRequest.params = {};\n        convRequest.params.context = msg.payload.context;\n    }\n    \n    if (typeof msg.payload.input !== undefined && typeof msg.payload.input.text !== undefined){\n       convRequest.payload = msg.payload.input.text;\n    }\n    else{\n        convRequest.payload = \"\";\n    }\n}\n\n//This array represents both possible outputs, the flow will go in the direction where the variable is not NULL    \nreturn [convRequest, nexmoMsg];",
+    "outputs": 2,
+    "noerr": 0,
+    "x": 330,
+    "y": 360,
+    "wires": [
+      ["74198fec.4434"],
+      ["fc5ce771.a14878"]
+    ]
+  },
+  {
+    "id": "e4848f42.c47a8",
+    "type": "http in",
+    "z": "1ba30e6a.f7edb2",
+    "name": "",
+    "url": "<your_assistant_url>",
+    "method": "post",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 167.49996948242188,
+    "y": 210,
+    "wires": [
+      ["654166bd.824218", "4380b3a7.3354cc"]
+    ]
+  },
+  {
+    "id": "74198fec.4434",
+    "type": "watson-conversation-v1",
+    "z": "1ba30e6a.f7edb2",
+    "name": "",
+    "workspaceid": "ae444685-d303-4749-a250-6de59960eb26",
+    "multiuser": false,
+    "context": true,
+    "empty-payload": true,
+    "default-endpoint": false,
+    "service-endpoint": "https://gateway.watsonplatform.net/assistant/api",
+    "timeout": "",
+    "optout-learning": false,
+    "x": 632.083251953125,
+    "y": 305.8055419921875,
+    "wires": [
+      ["2526700f.0043d"]
+    ]
+  },
+  {
+    "id": "e4a21ee8.9a0a",
+    "type": "http response",
+    "z": "1ba30e6a.f7edb2",
+    "name": "",
+    "statusCode": "",
+    "headers": {},
+    "x": 916.5,
+    "y": 526,
+    "wires": []
+  },
+  {
+    "id": "4380b3a7.3354cc",
+    "type": "debug",
+    "z": "1ba30e6a.f7edb2",
+    "name": "",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "x": 477.4999694824219,
+    "y": 110,
+    "wires": []
+  },
+  {
+    "id": "61b4678d.cb7e18",
+    "type": "debug",
+    "z": "1ba30e6a.f7edb2",
+    "name": "",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "x": 1070,
+    "y": 260,
+    "wires": []
+  },
+  {
+    "id": "2526700f.0043d",
+    "type": "function",
+    "z": "1ba30e6a.f7edb2",
+    "name": "PostAssistantProc",
+    "func": "if (msg.payload.output.vgwAction){\n\n    if (msg.payload.output.vgwAction.command == \"vgwActHangup\" || msg.payload.output.vgwAction.command == \"vgwActTransfer\"){\n        node.warn(\"Action as output caught: \");\n        node.warn(msg.payload.output.vgwAction.command)\n        \n        msg.payload.context.nexmoCommand = {};\n        msg.payload.context.nexmoCommand.command = msg.payload.output.vgwAction.command;\n        \n        msg.payload.output.vgwAction = undefined;\n        \n        msg.payload.output.vgwActionSequence = [];\n        \n        msg.payload.output.vgwActionSequence.push({\n        \"command\": \"vgwActPlayText\"\n            });\n        \n        msg.payload.output.vgwActionSequence.push({\n        \"command\": \"vgwActForceNoInputTurn\"\n            });\n    }\n}\nelse if (msg.payload.context.vgwAction){\n\n    if (msg.payload.context.vgwAction.command == \"vgwActHangup\"){\n        node.warn(\"Action as context caught: hangup\");    \n    }\n    \n        if (msg.payload.context.vgwAction.command == \"vgwActTransfer\"){\n        node.warn(\"Action as context caught: transfer\");    \n    }\n}\nelse if (msg.payload.context.vgwActionSequence){\n\n    if (msg.payload.context.vgwAction.command == \"vgwActHangup\"){\n        node.warn(\"Action as context caught: hangup\");    \n    }\n    \n    if (msg.payload.context.vgwAction.command == \"vgwActTransfer\"){\n        node.warn(\"Action as context caught: transfer\");    \n    }\n}\n\n//  Also need to look for telephony actions in sequences\n\nreturn [msg];",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 870,
+    "y": 140,
+    "wires": [
+      ["61b4678d.cb7e18", "e4a21ee8.9a0a"]
+    ]
+  },
+  {
+    "id": "fc5ce771.a14878",
+    "type": "http request",
+    "z": "1ba30e6a.f7edb2",
+    "name": "",
+    "method": "POST",
+    "ret": "obj",
+    "url": "<your_server_url>",
+    "tls": "",
+    "x": 280,
+    "y": 528,
+    "wires": [
+      ["2010fff3.b3f71", "85e294b3.d7e198"]
+    ]
+  },
+  {
+    "id": "2010fff3.b3f71",
+    "type": "function",
+    "z": "1ba30e6a.f7edb2",
+    "name": "Process Nexmo Response",
+    "func": "const ans = msg.payload.response;\nmsg.payload.context = msg.params.context;\n// msg.payload.output = { text: [] };\n\nif (msg.statusCode == 200){\n    msg.payload.context.nexmoCommand = null;\n//    msg.payload.output.text.push(ans);\n} else{\n    msg.payload.output.text.push(\"Error occurred when calling out to Nexmo\");\n}\n\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 592,
+    "y": 555,
+    "wires": [
+      ["e4a21ee8.9a0a", "17132b66.ab12c5"]
+    ]
+  },
+  {
+    "id": "85e294b3.d7e198",
+    "type": "debug",
+    "z": "1ba30e6a.f7edb2",
+    "name": "",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "x": 410,
+    "y": 680,
+    "wires": []
+  },
+  {
+    "id": "17132b66.ab12c5",
+    "type": "debug",
+    "z": "1ba30e6a.f7edb2",
+    "name": "",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "x": 800,
+    "y": 640,
+    "wires": []
+  }
+]
