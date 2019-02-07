@@ -1,4 +1,4 @@
-# Nexmo call handling Voice Agent SOE sample built with Node-RED
+# Nexmo call handling Watson Voice Agent & SOE
 
 This sample shows how to build a Service Orchestration Engine for Voice Gateway using Node-RED. Node-RED is a programming tool for wiring together 
 hardware devices, APIs and online services on top of Node.js. For more details go to: https://nodered.org/
